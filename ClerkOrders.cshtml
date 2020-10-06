@@ -1,0 +1,96 @@
+@inherits Dynamicweb.Rendering.RazorTemplateBase<Dynamicweb.Rendering.RazorTemplateModel<Dynamicweb.Rendering.Template>>
+@using System.Web
+@using System.Collections
+@using System.Linq
+@using Dynamicweb.Ecommerce.ProductCatalog
+@using Dynamicweb.Ecommerce.Orders
+
+@Include("../ClerkConfig.cshtml")
+
+@functions {
+
+	public class Product
+	{
+ 		public string id { get; set; }
+		public double quantity { get; set; }
+		public double price { get; set; }
+	}
+
+	public class Order
+    {
+		public Order()
+        {
+            products = new List<Product>();
+        }
+        public string id { get; set; }
+		public List<Product> products { get; set; }
+		public string time { get; set; }
+		public string email { get; set; }
+		public int customerId { get; set; }
+    }
+
+    public class Root
+    {
+        public Root()
+        {
+            Orders = new List<Order>();
+        }
+
+        public List<Order> Orders { get; set; }
+        public int totalOrders { get; set; }
+		public int pageOrders { get; set; }
+		public int pageCount { get; set; }
+		public int pageSize { get; set; }
+		public int pageCurrent { get; set; }
+    }
+}
+
+@{
+	List<Root> feedObject = new List<Root>();
+    Root feedRoot = new Root();
+
+foreach (var content in GetLoop("QueryResultItem")) {
+
+			var resultProperties = content.GetLoop("Properties").ToDictionary(x => x.GetString("Name"), y => y.GetString("Value"));
+
+			var order = Dynamicweb.Ecommerce.Services.Orders.GetById(resultProperties["ID"]);
+
+			Order orderObject = new Order();
+
+			var ProductOrderLines = order.ProductOrderLines;
+
+			if (ProductOrderLines.Count == 0) {
+				continue;
+			}
+
+			foreach (var OrderLine in ProductOrderLines) {
+
+				Product productObject = new Product();
+				productObject.id = OrderLine.ProductId;
+				productObject.quantity = OrderLine.Quantity;
+				productObject.price = Math.Round((OrderLine.Price.Price / OrderLine.Quantity), 2);
+				orderObject.products.Add(productObject);
+
+			}
+
+			orderObject.id = order.Id;
+			orderObject.time = order.Date.ToString("yyyy-MM-ddTH:mm:ss");
+			orderObject.email = order.CustomerEmail;
+			orderObject.customerId = order.CustomerAccessUserId;
+	
+			feedRoot.Orders.Add(orderObject);
+			
+}
+	
+
+    feedRoot.totalOrders = @GetInteger("QueryResult.TotalCount");
+	feedRoot.pageOrders = @GetInteger("QueryResult.Count");
+	feedRoot.pageCount = @GetInteger("DwPaging.PageCount");
+	feedRoot.pageSize = @GetInteger("DwPaging.PageSize");
+	feedRoot.pageCurrent = @GetInteger("DwPaging.CurrentPage");
+
+    feedObject.Add(feedRoot);
+
+    string jsonFeed = Newtonsoft.Json.JsonConvert.SerializeObject(feedObject[0]);
+}
+@jsonFeed

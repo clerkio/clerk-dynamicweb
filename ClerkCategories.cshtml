@@ -1,0 +1,72 @@
+@inherits Dynamicweb.Rendering.RazorTemplateBase<Dynamicweb.Rendering.RazorTemplateModel<Dynamicweb.Rendering.Template>>
+@using System.Web
+@using System.Collections
+@using System.Linq
+
+@Include("../ClerkConfig.cshtml")
+
+@functions {
+
+    public class SubCategories
+    {
+        public string id { get; set; }
+    }
+
+    public class Category
+    {
+        public string id { get; set; }
+        public string name { get; set; }
+        public string image { get; set; }
+        public string description { get; set; }
+        public string url { get; set; }
+        public string parent_id { get; set; }
+    }
+
+    public class Root
+    {
+        public Root()
+        {
+            Categories = new List<Category>();
+        }
+
+        public List<Category> Categories { get; set; }
+        public int totalCategories { get; set; }
+        public int pageCategories { get; set; }
+        public int pageCount { get; set; }
+        public int pageSize { get; set; }
+        public int pageCurrent { get; set; }
+    }
+}
+
+@{
+    int CategoriesCount = 0;
+    List<Root> feedObject = new List<Root>();
+    Root feedRoot = new Root();
+
+foreach (var category in GetLoop("QueryResultItem")) {
+            Category categoryObject = new Category();
+
+            var resultProperties = category.GetLoop("Properties").ToDictionary(x => x.GetString("Name"), y => y.GetString("Value"));
+
+                string linkGroup = "Default.aspx?Id=" + GetPageIdByNavigationTag("ProductsPage")+ "&Type="+resultProperties["Name"];;
+                categoryObject.id = resultProperties["ID"];
+                categoryObject.name = resultProperties["Name"];
+                categoryObject.description = resultProperties["Description"];
+                categoryObject.image = resultProperties["Image"] != "" ? resultProperties["Image"] : resultProperties["Image2"];
+                categoryObject.url = Dynamicweb.Frontend.SearchEngineFriendlyURLs.GetFriendlyUrl(linkGroup);
+
+                feedRoot.Categories.Add(categoryObject);
+                    
+    }
+
+    feedRoot.totalCategories = @GetInteger("QueryResult.TotalCount");
+    feedRoot.pageCategories = @GetInteger("QueryResult.Count");
+    feedRoot.pageCount = @GetInteger("DwPaging.PageCount");
+    feedRoot.pageSize = @GetInteger("DwPaging.PageSize");
+    feedRoot.pageCurrent = @GetInteger("DwPaging.CurrentPage");
+
+    feedObject.Add(feedRoot);
+
+    string jsonFeed = Newtonsoft.Json.JsonConvert.SerializeObject(feedObject[0]);
+}
+@jsonFeed

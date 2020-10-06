@@ -1,0 +1,170 @@
+@inherits Dynamicweb.Rendering.RazorTemplateBase<Dynamicweb.Rendering.RazorTemplateModel<Dynamicweb.Rendering.Template>>
+@using System.Web
+@using System.Collections
+@using System.Linq
+@using Dynamicweb.Configuration;
+@using Dynamicweb.Core;
+@using Dynamicweb.Rapido.Blocks.Components.General
+@using Dynamicweb.Rapido.Services
+@using Dynamicweb.Ecommerce.ProductCatalog
+
+@Include("../ClerkConfig.cshtml")
+
+@functions {
+
+	public class CustomField
+	{
+ 		public string name { get; set; }
+		public string value { get; set; }
+	}
+	public class Category
+	{
+ 		public string id { get; set; }
+	}
+	public class Product
+    {
+		public Product()
+        {
+            customFields = new List<CustomField>();
+			categories = new List<Category>();
+        }
+
+        public bool active { get; set; }
+        public string id { get; set; }
+		public string number { get; set; }
+		public string name { get; set; }
+		public string manufacturer { get; set; }
+		public DateTime created { get; set; }
+		public string long_description { get; set; }
+		public double price { get; set; }
+		public double list_price { get; set; }
+        public double discount { get; set; }
+		public string currency { get; set; }
+        public double stock { get; set; }
+		public bool outOfStock { get; set; }
+		public string stockText { get; set; }
+        public string deliveryText { get; set; }
+        public string link { get; set; }
+        public string variantid { get; set; }
+        public string description { get; set; }
+        public string image { get; set; }
+        public double points { get; set; }
+		public bool havePointPrice { get; set; }
+        public bool onSale { get; set; }
+		public List<CustomField> customFields { get; set; }
+		public List<Category> categories { get; set; }
+    }
+
+    public class Root
+    {
+        public Root()
+        {
+            Products = new List<Product>();
+        }
+
+        public List<Product> Products { get; set; }
+        public int totalProducts { get; set; }
+		public int pageProducts { get; set; }
+		public int pageCount { get; set; }
+		public int pageSize { get; set; }
+		public int pageCurrent { get; set; }
+    }
+}
+
+@{
+	int productCount = 0;
+	List<Root> feedObject = new List<Root>();
+    Root feedRoot = new Root();
+	List<string> _productIds = new List<string>();
+	
+
+	foreach (var _product in GetLoop("QueryResultItem")) {
+		_productIds.Add(_product.GetString("ID"));
+
+	}
+
+	string[] productIds = _productIds.ToArray();
+	var products = Dynamicweb.Ecommerce.Services.Products.GetByProductIDs(productIds, false, ClerkConfig.LanguageID, false, false);
+	foreach (var product in products) {
+
+			Product productObject = new Product();
+			var onSale = false;
+			var currency = "";
+
+			@product.GetInformativePrice(ClerkConfig.CurrencyCode, ClerkConfig.CountryCode);
+						
+			var stockStatus = Dynamicweb.Ecommerce.Services.Products.GetStockStatus(product, product.LanguageId);
+			productObject.id = product.Id;
+			productObject.number = product.Number;
+			productObject.active = product.Active;
+			productObject.image = "/Admin/Public/GetImage.ashx?Width="+ClerkConfig.ImageWidth+"&Height="+ClerkConfig.ImageHeight+"&Crop=5&BackgroundColor=&DoNotUpscale=True&FillCanvas=True&Image=/Files/Images/Ecom/Products/"+product.Id+".png";
+			productObject.name = product.Name;
+			productObject.created = product.Created;
+			productObject.long_description = product.LongDescription;
+			productObject.description = product.ShortDescription;
+			productObject.points = product.DefaultPoints;
+			productObject.havePointPrice = productObject.points != 0;
+			productObject.stock = product.Stock;
+			productObject.outOfStock = product.Stock <= 0 ? true : false;
+			productObject.stockText = stockStatus != null ? stockStatus.Text : "";
+        	productObject.deliveryText = stockStatus != null && !string.IsNullOrEmpty(stockStatus.ExpectedDeliveryText) ? Translate("Delivery") + " " + stockStatus.ExpectedDeliveryText + " " + stockStatus.ExpectedDeliveryValue : "";
+			productObject.variantid = product.VariantId;
+			productObject.price = product.GetPrice(ClerkConfig.CurrencyCode, ClerkConfig.CountryCode).PriceWithVAT;
+			productObject.list_price = product.GetPrice(ClerkConfig.CurrencyCode, ClerkConfig.CountryCode).PriceWithVAT;
+			productObject.discount = 0.00;
+			productObject.onSale = onSale;
+			productObject.currency = currency;
+
+			if (product.Manufacturer != null && product.ManufacturerId != "") {
+				productObject.manufacturer = product.Manufacturer.Name;
+			}
+			
+			foreach (var Group in product.Groups) {
+				Category categoryObject = new Category();
+				categoryObject.id = Group.Id;
+				productObject.categories.Add(categoryObject);
+			}
+
+			var Fields = product.ProductFieldValues;
+			
+			foreach (var field in Fields) {
+				var value = Dynamicweb.Ecommerce.Services.Products.GetFieldValue(product, field.ProductField).Data;
+
+				if (value != null) {
+                    CustomField fieldObject = new CustomField();
+					if (field.GetFieldName() == "SpSalesPriceInclVAT") {
+	
+						productObject.list_price = Math.Round(Convert.ToDouble(value.ToString()), 2);
+
+					}
+                    fieldObject.name = field.GetFieldName();
+                    fieldObject.value = value.ToString();
+                    productObject.customFields.Add(fieldObject);
+				}
+			}
+
+			string linkGroup = "Default.aspx?Id=" + GetPageIdByNavigationTag("ProductsPage") + "&ProductId=" + product.Id;
+            string originalProductCatalogueId = Dynamicweb.Context.Current.Request["OriginalProductCatalogueId"];
+
+            if (!string.IsNullOrWhiteSpace(originalProductCatalogueId))
+            {
+                linkGroup = "Default.aspx?Id=" + originalProductCatalogueId + "&ProductId=" + product.Id;
+            }
+
+        	productObject.link = Dynamicweb.Frontend.SearchEngineFriendlyURLs.GetFriendlyUrl(linkGroup);
+
+			feedRoot.Products.Add(productObject);
+			productCount++;
+	}
+
+    feedRoot.totalProducts = @GetInteger("QueryResult.TotalCount");
+	feedRoot.pageProducts = @GetInteger("QueryResult.Count");
+	feedRoot.pageCount = @GetInteger("DwPaging.PageCount");
+	feedRoot.pageSize = @GetInteger("DwPaging.PageSize");
+	feedRoot.pageCurrent = @GetInteger("DwPaging.CurrentPage");
+
+    feedObject.Add(feedRoot);
+
+    string jsonFeed = Newtonsoft.Json.JsonConvert.SerializeObject(feedObject[0]);
+}
+@jsonFeed

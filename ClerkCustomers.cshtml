@@ -1,0 +1,81 @@
+@inherits Dynamicweb.Rendering.RazorTemplateBase<Dynamicweb.Rendering.RazorTemplateModel<Dynamicweb.Rendering.Template>>
+@using System.Web
+@using System.Collections
+@using System.Linq
+@using Dynamicweb.Ecommerce.Orders
+
+@Include("../ClerkConfig.cshtml")
+
+@functions {
+
+    public bool IsValidEmailAddress(string email)
+    {
+        try
+        {
+            var emailChecked = new System.Net.Mail.MailAddress(email);
+            return true;
+        }
+        catch
+        {
+            return false;
+        }
+    }
+
+    public class Customer
+    {
+        public string id { get; set; }
+        public string name { get; set; }
+        public string email { get; set; }
+        public bool subscribed { get; set; }
+        public string zip { get; set; }
+        public string gender { get; set; }
+        public string age { get; set; }
+        public string is_b2b { get; set; }
+    }
+
+    public class Root
+    {
+        public Root()
+        {
+            Customers = new List<Customer>();
+        }
+
+        public List<Customer> Customers { get; set; }
+        public int totalCustomers { get; set; }
+        public int pageCustomers { get; set; }
+        public int pageCount { get; set; }
+        public int pageSize { get; set; }
+        public int pageCurrent { get; set; }
+    }
+}
+
+@{
+
+    List<Root> feedObject = new List<Root>();
+    Root feedRoot = new Root();
+
+    foreach (var customer in GetLoop("QueryResultItem")) {
+        
+            Customer customerObject = new Customer();
+
+            var resultProperties = customer.GetLoop("Properties").ToDictionary(x => x.GetString("Name"), y => y.GetString("Value"));
+
+            customerObject.id = resultProperties["ID"];
+            customerObject.name = resultProperties.ContainsKey("Name") ? resultProperties["Name"] : null;
+            customerObject.email = resultProperties["Email"];
+            customerObject.zip = resultProperties.ContainsKey("ZIP") ? resultProperties["ZIP"] : null;
+
+            feedRoot.Customers.Add(customerObject);
+    }
+
+    feedRoot.totalCustomers = @GetInteger("QueryResult.TotalCount");
+    feedRoot.pageCustomers = @GetInteger("QueryResult.Count");
+    feedRoot.pageCount = @GetInteger("DwPaging.PageCount");
+    feedRoot.pageSize = @GetInteger("DwPaging.PageSize");
+    feedRoot.pageCurrent = @GetInteger("DwPaging.CurrentPage");
+
+    feedObject.Add(feedRoot);
+
+    string jsonFeed = Newtonsoft.Json.JsonConvert.SerializeObject(feedObject[0]);
+}
+@jsonFeed

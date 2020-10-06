@@ -1,0 +1,90 @@
+@inherits Dynamicweb.Rendering.RazorTemplateBase<Dynamicweb.Rendering.RazorTemplateModel<Dynamicweb.Rendering.Template>>
+@using System.Web
+@using System.Collections
+@using System.Linq
+@using Dynamicweb.Ecommerce.ProductCatalog
+@using Dynamicweb.Content
+@using HtmlAgilityPack;
+
+@Include("../ClerkConfig.cshtml")
+
+@functions {
+
+	public class Content
+    {
+
+        public string id { get; set; }
+		public string active { get; set; }
+		public string type { get; set; }
+		public string url { get; set; }
+		public string image { get; set; }
+		public string title { get; set; }
+		public string text { get; set; }
+    }
+
+    public class Root
+    {
+        public Root()
+        {
+            Contents = new List<Content>();
+        }
+
+        public List<Content> Contents { get; set; }
+        public int totalContents { get; set; }
+		public int pageContents { get; set; }
+		public int pageCount { get; set; }
+		public int pageSize { get; set; }
+		public int pageCurrent { get; set; }
+    }
+}
+
+@{
+	
+	List<Root> feedObject = new List<Root>();
+    Root feedRoot = new Root();
+
+	foreach (var content in GetLoop("QueryResultItem")) {
+			Content contentObject = new Content();
+
+			var resultProperties = content.GetLoop("Properties").ToDictionary(x => x.GetString("Name"), y => y.GetString("Value"));
+			var content_text = " ";
+			
+			foreach (var prop in content.GetLoop("Properties")) {
+
+				if (prop.GetValue("Value") is System.String[])
+				{
+
+					if (prop.GetString("Name") == "ParagraphContent") {
+                		content_text = String.Join(", ", prop.GetValue("Value") as System.String[]);
+					}
+				}
+			}
+
+			if (resultProperties.ContainsKey("PageItemType") && resultProperties.ContainsKey("PageMenuText") && content_text != " ") {
+
+              string linkGroup = "Default.aspx?Id=" + resultProperties["PageId"];
+                  contentObject.id = resultProperties.ContainsKey("PageId") ? resultProperties["PageId"] : "";
+                  contentObject.type = resultProperties.ContainsKey("PageItemType") ? resultProperties["PageItemType"] : "";
+                  contentObject.image = resultProperties.ContainsKey("DynamicArticle_Image") ? resultProperties["DynamicArticle_Image"] : "";
+                  contentObject.active = resultProperties.ContainsKey("PageActive") ? resultProperties["PageActive"] : "False";
+                  contentObject.title = resultProperties.ContainsKey("PageMenuText") ? resultProperties["PageMenuText"] : "";
+                  contentObject.url = Dynamicweb.Frontend.SearchEngineFriendlyURLs.GetFriendlyUrl(linkGroup) != "" ? Dynamicweb.Frontend.SearchEngineFriendlyURLs.GetFriendlyUrl(linkGroup) : "Default.aspx?Id=" + resultProperties["PageId"];
+                  contentObject.text = content_text;
+
+              feedRoot.Contents.Add(contentObject);
+
+			}
+					
+	}
+
+    feedRoot.totalContents = @GetInteger("QueryResult.TotalCount");
+	feedRoot.pageContents = @GetInteger("QueryResult.Count");
+	feedRoot.pageCount = @GetInteger("DwPaging.PageCount");
+	feedRoot.pageSize = @GetInteger("DwPaging.PageSize");
+	feedRoot.pageCurrent = @GetInteger("DwPaging.CurrentPage");
+
+    feedObject.Add(feedRoot);
+
+    string jsonFeed = Newtonsoft.Json.JsonConvert.SerializeObject(feedObject[0]);
+}
+@jsonFeed

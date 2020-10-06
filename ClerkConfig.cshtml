@@ -1,0 +1,46 @@
+@functions {
+
+	public class Config
+    {
+        public string LanguageID { get; set; }
+		public string PrivateKey { get; set; }
+		public string CurrencyCode { get; set; }
+		public string CountryCode { get; set; }
+		public int PageLimit { get; set; }
+		public int PageOffset { get; set; }
+		public int ImageHeight { get; set; }
+		public int ImageWidth { get; set; }
+		public int OrderHistoryDays { get; set; }
+    }
+}
+
+@{
+	@*You have to add your Clerk Private key here for security reasons*@
+	var PrivateKey = "##### CLERK Private Key Here #####";
+	
+	Config ClerkConfig = new Config();
+    var request = HttpContext.Current.Request;
+	var response = HttpContext.Current.Response;
+	ClerkConfig.LanguageID = request["LanguageID"];
+	ClerkConfig.PrivateKey = request["PrivateKey"];
+	ClerkConfig.PageLimit = Convert.ToInt32(request["limit"]);
+	ClerkConfig.PageOffset = Convert.ToInt32(request["offset"]);
+    ClerkConfig.ImageHeight = Convert.ToInt32(request["imageHeight"]);
+    ClerkConfig.ImageWidth = Convert.ToInt32(request["imageWidth"]);
+	ClerkConfig.CurrencyCode = request["CurrencyCode"];
+	ClerkConfig.CountryCode = "DK";
+	ClerkConfig.OrderHistoryDays = Convert.ToInt32(request["OrderHistoryDays"]);
+
+	@*Authentication*@
+
+	if (PrivateKey != ClerkConfig.PrivateKey) {
+
+        response.Status = "403 Forbidden"; 
+            
+        response.StatusCode = 403;
+       
+        response.End(); 
+
+	}
+
+}
