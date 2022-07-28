@@ -55,6 +55,10 @@ foreach (var content in GetLoop("QueryResultItem")) {
 
 			var order = Dynamicweb.Ecommerce.Services.Orders.GetById(resultProperties["ID"]);
 
+			if (order.ShopId != ClerkConfig.ShopId) {
+				continue;
+			}
+
 			Order orderObject = new Order();
 
 			var ProductOrderLines = order.ProductOrderLines;

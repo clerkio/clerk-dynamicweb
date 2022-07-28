@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Query ID="09956873-6dc3-4aa2-b4f8-62d3152ad2bc" Name="Content.query">
+  <Meta />
+  <Settings />
+  <Source Repository="Clerk" Item="Content.index" Type="Dynamicweb.Indexing.Queries.IndexQueryProvider, Dynamicweb.Indexing" />
+  <Parameters />
+  <Expressions>
+    <GroupExpression Operator="And">
+      <BinaryExpression Operator="Equal" Disabled="false">
+        <Left>
+          <FieldExpression Field="PageItemType" />
+        </Left>
+        <Right>
+          <TermExpression Value="DynamicArticle" DisplayValue="Dynamic article" Type="System.String" />
+        </Right>
+      </BinaryExpression>
+      <BinaryExpression Operator="Equal" Disabled="false">
+        <Left>
+          <FieldExpression Field="PageActive" />
+        </Left>
+        <Right>
+          <TermExpression Value="True" DisplayValue="True" Type="System.Boolean" />
+        </Right>
+      </BinaryExpression>
+    </GroupExpression>
+  </Expressions>
+  <ViewFields />
+  <ViewLanguages />
+  <CompletionRules />
+  <CompletionLanguages />
+</Query>

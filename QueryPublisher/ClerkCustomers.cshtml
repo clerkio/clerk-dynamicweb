@@ -60,6 +60,12 @@
 
             var resultProperties = customer.GetLoop("Properties").ToDictionary(x => x.GetString("Name"), y => y.GetString("Value"));
 
+            if (resultProperties.ContainsKey("ShopId") == true) {
+                if (@resultProperties["ShopId"] != ClerkConfig.ShopId) {
+                    continue;
+                }
+            }
+
             customerObject.id = resultProperties["ID"];
             customerObject.name = resultProperties.ContainsKey("Name") ? resultProperties["Name"] : null;
             customerObject.email = resultProperties["Email"];

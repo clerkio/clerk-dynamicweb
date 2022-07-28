@@ -6,6 +6,7 @@
 		public string PrivateKey { get; set; }
 		public string CurrencyCode { get; set; }
 		public string CountryCode { get; set; }
+		public string ShopId { get; set; }
 		public int PageLimit { get; set; }
 		public int PageOffset { get; set; }
 		public int ImageHeight { get; set; }
@@ -28,7 +29,8 @@
     ClerkConfig.ImageHeight = Convert.ToInt32(request["imageHeight"]);
     ClerkConfig.ImageWidth = Convert.ToInt32(request["imageWidth"]);
 	ClerkConfig.CurrencyCode = request["CurrencyCode"];
-	ClerkConfig.CountryCode = "DK";
+	ClerkConfig.CountryCode = request["CountryCode"];
+	ClerkConfig.ShopId = !String.IsNullOrEmpty(request["ShopId"]) ? request["ShopId"] : "SHOP1";
 	ClerkConfig.OrderHistoryDays = Convert.ToInt32(request["OrderHistoryDays"]);
 
 	@*Authentication*@

@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Index Type="Dynamicweb.Indexing.Index, Dynamicweb.Indexing" Name="Customers.index">
+  <Meta />
+  <Settings />
+  <Instances Balancer="Dynamicweb.Indexing.Balancing.ActivePassive">
+    <Instance Name="Customers" Type="Dynamicweb.Indexing.Lucene.LuceneIndexProvider, Dynamicweb.Indexing.Lucene" />
+  </Instances>
+  <Builds Type="Dynamicweb.Indexing.Builders.SqlIndexBuilder, Dynamicweb.Indexing">
+    <Build Name="Customers" Action="Execute">
+      <Setting Name="Query">SELECT * FROM AccessUser WHERE AccessUserType  = 5</Setting>
+      <Setting Name="CountQuery">SELECT * FROM AccessUser WHERE AccessUserType  = 5</Setting>
+      <Notification SendLog="false" NotificationType="Never" />
+    </Build>
+  </Builds>
+  <Schema>
+    <Fields>
+      <Field Source="AccessUserId" Name="ID" SystemName="ID" Type="System.String" Stored="true" Analyzed="false" Indexed="true" />
+      <Field Source="AccessUserName" Name="Name" SystemName="Name" Type="System.String" Stored="true" Analyzed="false" Indexed="true" />
+      <Field Source="AccessUserEmail" Name="Email" SystemName="Email" Type="System.String" Stored="true" Analyzed="false" Indexed="true" />
+      <Field Source="AccessUserZip" Name="ZIP" SystemName="ZIP" Type="System.String" Stored="true" Analyzed="false" Indexed="true" />
+      <Field Source="AccessUserShopId" Name="ShopId" SystemName="ShopId" Type="System.String" Stored="true" Analyzed="false" Indexed="true" />
+    </Fields>
+    <FieldTypes />
+  </Schema>
+</Index>

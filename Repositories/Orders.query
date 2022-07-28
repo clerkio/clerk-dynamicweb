@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Query ID="67d12eb3-c878-40aa-9880-6324d35ceb87" Name="Orders.query">
+  <Meta />
+  <Settings />
+  <Source Repository="Clerk" Item="Orders.index" Type="Dynamicweb.Indexing.Queries.IndexQueryProvider, Dynamicweb.Indexing" />
+  <Parameters>
+    <Parameter Name="LanguageID" Type="System.String" DefaultValue="LANG2" />
+  </Parameters>
+  <Expressions>
+    <GroupExpression Operator="And">
+      <BinaryExpression Operator="Equal" Disabled="false">
+        <Left>
+          <FieldExpression Field="LanguageID" />
+        </Left>
+        <Right>
+          <ParameterExpression Name="LanguageID" />
+        </Right>
+      </BinaryExpression>
+    </GroupExpression>
+  </Expressions>
+  <ViewFields />
+  <ViewLanguages />
+  <CompletionRules />
+  <CompletionLanguages />
+</Query>

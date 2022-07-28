@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Query ID="0ca3e05c-b458-4395-805a-761282a4b6e2" Name="Categories.query">
+  <Meta />
+  <Settings />
+  <Source Repository="Clerk" Item="Categories.index" Type="Dynamicweb.Indexing.Queries.IndexQueryProvider, Dynamicweb.Indexing" />
+  <ViewFields />
+  <ViewLanguages />
+  <CompletionRules />
+  <CompletionLanguages />
+</Query>

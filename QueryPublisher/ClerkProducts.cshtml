@@ -87,11 +87,29 @@
 	var products = Dynamicweb.Ecommerce.Services.Products.GetByProductIDs(productIds, false, ClerkConfig.LanguageID, false, false);
 	foreach (var product in products) {
 
+			if (product.DefaultShopId != ClerkConfig.ShopId) {
+				continue;
+			}
+			
+			var discounted_price = 0.00;
+
+			foreach (var price in product.Prices) {
+				if (DateTime.Now > price.ValidFrom && price.UserGroupId == "" && price.UserCustomerNumber == "") {
+					if (price.ValidTo == null) {
+						discounted_price = price.Amount;
+					}
+					else {
+						if (DateTime.Now < price.ValidTo) {
+							discounted_price = price.Amount;
+						}
+					}
+				}
+			}
+			
+
 			Product productObject = new Product();
 			var onSale = false;
 			var currency = "";
-
-			@product.GetInformativePrice(ClerkConfig.CurrencyCode, ClerkConfig.CountryCode);
 						
 			var stockStatus = Dynamicweb.Ecommerce.Services.Products.GetStockStatus(product, product.LanguageId);
 			productObject.id = product.Id;
@@ -110,8 +128,8 @@
         	productObject.deliveryText = stockStatus != null && !string.IsNullOrEmpty(stockStatus.ExpectedDeliveryText) ? Translate("Delivery") + " " + stockStatus.ExpectedDeliveryText + " " + stockStatus.ExpectedDeliveryValue : "";
 			productObject.variantid = product.VariantId;
 			productObject.price = product.GetPrice(ClerkConfig.CurrencyCode, ClerkConfig.CountryCode).PriceWithVAT;
-			productObject.list_price = product.GetPrice(ClerkConfig.CurrencyCode, ClerkConfig.CountryCode).PriceWithVAT;
-			productObject.discount = 0.00;
+			productObject.list_price = discounted_price != 0.00 ? discounted_price*1.25 : product.GetPrice(ClerkConfig.CurrencyCode, ClerkConfig.CountryCode).PriceWithVAT;
+			productObject.discount = discounted_price != 0.00 ? product.GetPrice(ClerkConfig.CurrencyCode, ClerkConfig.CountryCode).PriceWithVAT - (discounted_price*1.25) : 0.00;
 			productObject.onSale = onSale;
 			productObject.currency = currency;
 
@@ -133,8 +151,9 @@
 				if (value != null) {
                     CustomField fieldObject = new CustomField();
 					if (field.GetFieldName() == "SpSalesPriceInclVAT") {
-	
-						productObject.list_price = Math.Round(Convert.ToDouble(value.ToString()), 2);
+						if (discounted_price == 0.00) {
+							productObject.list_price = Math.Round(Convert.ToDouble(value.ToString()), 2);
+						}
 
 					}
                     fieldObject.name = field.GetFieldName();

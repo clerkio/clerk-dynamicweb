@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Query ID="9903138e-4c0f-49f3-a858-e917f8ee8e4f" Name="Products.query">
+  <Meta />
+  <Settings />
+  <Source Repository="Clerk" Item="Products.index" Type="Dynamicweb.Indexing.Queries.IndexQueryProvider, Dynamicweb.Indexing" />
+  <ViewFields />
+  <ViewLanguages />
+  <CompletionRules />
+  <CompletionLanguages />
+  <Parameters>
+    <Parameter Name="LanguageID" Type="System.String" DefaultValue="LANG2" />
+    <Parameter Name="Active" Type="System.Boolean" DefaultValue="True" />
+  </Parameters>
+  <Expressions>
+    <GroupExpression Operator="And">
+      <BinaryExpression Operator="Equal" Disabled="false">
+        <Left>
+          <FieldExpression Field="LanguageID" />
+        </Left>
+        <Right>
+          <ParameterExpression Name="LanguageID" />
+        </Right>
+      </BinaryExpression>
+      <BinaryExpression Operator="Equal" Disabled="false">
+        <Left>
+          <FieldExpression Field="Active" />
+        </Left>
+        <Right>
+          <ParameterExpression Name="Active" />
+        </Right>
+      </BinaryExpression>
+      <BinaryExpression Operator="GreaterThan" Disabled="false">
+        <Left>
+          <FieldExpression Field="Price" />
+        </Left>
+        <Right>
+          <ConstantExpression Value="0" Type="System.Double" />
+        </Right>
+      </BinaryExpression>
+    </GroupExpression>
+  </Expressions>
+  <SortOrder>
+    <Sort Field="ID" Direction="Descending" />
+  </SortOrder>
+</Query>

@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Query ID="a2760b9c-2014-45e3-a860-c9d503c140cb" Name="Customers.query">
+  <Meta />
+  <Settings />
+  <Source Repository="Clerk" Item="Customers.index" Type="Dynamicweb.Indexing.Queries.IndexQueryProvider, Dynamicweb.Indexing" />
+  <ViewFields />
+  <ViewLanguages />
+  <CompletionRules />
+  <CompletionLanguages />
+  <Expressions>
+    <GroupExpression Operator="Or" Negate="True">
+      <BinaryExpression Operator="IsEmpty" Disabled="false">
+        <Left>
+          <FieldExpression Field="Email" />
+        </Left>
+        <Right>
+          <ConstantExpression Value="Empty" Type="System.String" />
+        </Right>
+      </BinaryExpression>
+      <BinaryExpression Operator="IsEmpty" Disabled="false">
+        <Left>
+          <FieldExpression Field="Name" />
+        </Left>
+        <Right>
+          <ConstantExpression Value="Empty" Type="System.String" />
+        </Right>
+      </BinaryExpression>
+    </GroupExpression>
+  </Expressions>
+  <Parameters />
+</Query>

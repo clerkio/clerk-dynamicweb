@@ -48,14 +48,22 @@ foreach (var category in GetLoop("QueryResultItem")) {
 
             var resultProperties = category.GetLoop("Properties").ToDictionary(x => x.GetString("Name"), y => y.GetString("Value"));
 
-                string linkGroup = "Default.aspx?Id=" + GetPageIdByNavigationTag("ProductsPage")+ "&Type="+resultProperties["Name"];;
-                categoryObject.id = resultProperties["ID"];
-                categoryObject.name = resultProperties["Name"];
-                categoryObject.description = resultProperties["Description"];
-                categoryObject.image = resultProperties["Image"] != "" ? resultProperties["Image"] : resultProperties["Image2"];
-                categoryObject.url = Dynamicweb.Frontend.SearchEngineFriendlyURLs.GetFriendlyUrl(linkGroup);
+                if (resultProperties.ContainsKey("Name") == true) {
 
-                feedRoot.Categories.Add(categoryObject);
+                  if (@resultProperties["ShopId"] != ClerkConfig.ShopId) {
+                    continue;
+                  }
+
+                  string linkGroup = "Default.aspx?Id=" + GetPageIdByNavigationTag("ProductsPage")+ "&Type="+resultProperties["Name"];;
+                  categoryObject.id = resultProperties["ID"];
+                  categoryObject.name = resultProperties["Name"];
+                  categoryObject.description = resultProperties.ContainsKey("Description") == true  ? resultProperties["Description"] : "";
+                  categoryObject.image = resultProperties.ContainsKey("Image") == true && resultProperties["Image"] != "" ? resultProperties["Image"] : "";
+                  categoryObject.url = Dynamicweb.Frontend.SearchEngineFriendlyURLs.GetFriendlyUrl(linkGroup);
+
+                  feedRoot.Categories.Add(categoryObject);
+
+                };
                     
     }
 

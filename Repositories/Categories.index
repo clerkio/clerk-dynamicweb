@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Index Type="Dynamicweb.Indexing.Index, Dynamicweb.Indexing" Name="Categories.index">
+  <Meta />
+  <Settings />
+  <Instances Balancer="Dynamicweb.Indexing.Balancing.ActivePassive">
+    <Instance Name="Categories" Type="Dynamicweb.Indexing.Lucene.LuceneIndexProvider, Dynamicweb.Indexing.Lucene" />
+  </Instances>
+  <Builds Type="Dynamicweb.Indexing.Builders.SqlIndexBuilder, Dynamicweb.Indexing">
+    <Build Name="Categories" Action="Execute">
+      <Setting Name="Query">SELECT  EG.*, ESGR.ShopGroupShopId FROM EcomGroups as EG INNER JOIN EcomShopGroupRelation as ESGR ON ESGR.ShopGroupGroupId = EG.GroupId</Setting>
+      <Setting Name="CountQuery">SELECT  EG.*, ESGR.ShopGroupShopId FROM EcomGroups as EG INNER JOIN EcomShopGroupRelation as ESGR ON ESGR.ShopGroupGroupId = EG.GroupId</Setting>
+      <Notification SendLog="false" NotificationType="Never" />
+    </Build>
+  </Builds>
+  <Schema>
+    <Fields>
+      <Field Source="GroupId" Name="ID" SystemName="ID" Type="System.String" Stored="true" Analyzed="false" Indexed="true" />
+      <Field Source="GroupLanguageId" Name="LanguageID" SystemName="LanguageID" Type="System.String" Stored="true" Analyzed="false" Indexed="true" />
+      <Field Source="GroupName" Name="Name" SystemName="Name" Type="System.String" Stored="true" Analyzed="false" Indexed="true" />
+      <Field Source="GroupLargeImage" Name="Image" SystemName="Image" Type="System.String" Stored="true" Analyzed="false" Indexed="true" />
+      <Field Source="GroupSmallImage" Name="Image2" SystemName="Image2" Type="System.String" Stored="true" Analyzed="false" Indexed="true" />
+      <Field Source="GroupDescription" Name="Description" SystemName="Description" Type="System.String" Stored="true" Analyzed="false" Indexed="true" />
+      <Field Source="GroupCompletionRules" Name="CompletionRules" SystemName="CompletionRules" Type="System.String" Stored="true" Analyzed="false" Indexed="true" />
+      <Field Source="ShopGroupShopId" Name="ShopId" SystemName="ShopId" Type="System.String" Stored="true" Analyzed="false" Indexed="true" />
+    </Fields>
+    <FieldTypes />
+  </Schema>
+</Index>
