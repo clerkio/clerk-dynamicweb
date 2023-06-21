@@ -7,6 +7,8 @@
 @using Dynamicweb.Rapido.Blocks.Components.General
 @using Dynamicweb.Rapido.Services
 @using Dynamicweb.Ecommerce.ProductCatalog
+@using Dynamicweb.Ecommerce.International
+@using Dynamicweb.Ecommerce.Prices
 
 @Include("../ClerkConfig.cshtml")
 
@@ -31,6 +33,7 @@
 
         public bool active { get; set; }
         public string id { get; set; }
+		public string defaultShopId { get; set; }
 		public string number { get; set; }
 		public string name { get; set; }
 		public string manufacturer { get; set; }
@@ -76,6 +79,10 @@
 	List<Root> feedObject = new List<Root>();
     Root feedRoot = new Root();
 	List<string> _productIds = new List<string>();
+	Currency _currencyContext = new Dynamicweb.Ecommerce.International.Currency();
+	_currencyContext.Code = ClerkConfig.CurrencyCode;
+	Country _countryContext = new Dynamicweb.Ecommerce.International.Country();
+	PriceContext _priceContext = new Dynamicweb.Ecommerce.Prices.PriceContext(_currencyContext, _countryContext);
 
 
 	foreach (var _product in GetLoop("QueryResultItem")) {
@@ -87,8 +94,10 @@
 	var products = Dynamicweb.Ecommerce.Services.Products.GetByProductIDs(productIds, false, ClerkConfig.LanguageID, false, false);
 	foreach (var product in products) {
 
-			if (product.DefaultShopId != ClerkConfig.ShopId) {
-				continue;
+			if (!product.DefaultShopId.IsNullOrEmpty()){
+              if (product.DefaultShopId != ClerkConfig.ShopId) {
+                  continue;
+              }
 			}
 
 			var discounted_price = 0.00;
@@ -111,8 +120,9 @@
 			var onSale = false;
 			var currency = "";
 
-			var stockStatus = Dynamicweb.Ecommerce.Services.Products.GetStockStatus(product, product.LanguageId);
+			var stockStatus = Dynamicweb.Ecommerce.Services.Products.GetStockStatus(product);
 			productObject.id = product.Id;
+			productObject.defaultShopId = product.DefaultShopId;
 			productObject.number = product.Number;
 			productObject.active = product.Active;
 			productObject.image = "/Admin/Public/GetImage.ashx?Width="+ClerkConfig.ImageWidth+"&Height="+ClerkConfig.ImageHeight+"&Crop=5&BackgroundColor=&DoNotUpscale=True&FillCanvas=True&Image=/Files/Images/Ecom/Products/"+product.Id+".png";
@@ -123,13 +133,13 @@
 			productObject.points = product.DefaultPoints;
 			productObject.havePointPrice = productObject.points != 0;
 			productObject.stock = product.Stock;
-			productObject.outOfStock = product.Stock <= 0 ? true : false;
-			productObject.stockText = stockStatus != null ? stockStatus.Text : "";
-        	productObject.deliveryText = stockStatus != null && !string.IsNullOrEmpty(stockStatus.ExpectedDeliveryText) ? Translate("Delivery") + " " + stockStatus.ExpectedDeliveryText + " " + stockStatus.ExpectedDeliveryValue : "";
+			productObject.outOfStock = (product.Stock <= 0) ? true : false;
+			productObject.stockText = stockStatus != null ? stockStatus.GetText(product.LanguageId) : "";
+        	productObject.deliveryText = stockStatus != null && !string.IsNullOrEmpty(stockStatus.GetExpectedDeliveryText(product.LanguageId)) ? Translate("Delivery") + " " + stockStatus.GetExpectedDeliveryText(product.LanguageId) + " " + stockStatus.GetExpectedDeliveryValue(product.LanguageId) : "";
 			productObject.variantid = product.VariantId;
-			productObject.price = product.GetPrice(ClerkConfig.CurrencyCode, ClerkConfig.CountryCode).PriceWithVAT;
-			productObject.list_price = discounted_price != 0.00 ? discounted_price*1.25 : product.GetPrice(ClerkConfig.CurrencyCode, ClerkConfig.CountryCode).PriceWithVAT;
-			productObject.discount = discounted_price != 0.00 ? product.GetPrice(ClerkConfig.CurrencyCode, ClerkConfig.CountryCode).PriceWithVAT - (discounted_price*1.25) : 0.00;
+			productObject.price = product.GetPrice(_priceContext).PriceWithVAT;
+			productObject.list_price = discounted_price != 0.00 ? discounted_price*1.25 : product.GetPrice(_priceContext).PriceWithVAT;
+			productObject.discount = discounted_price != 0.00 ? product.GetPrice(_priceContext).PriceWithVAT - (discounted_price*1.25) : 0.00;
 			productObject.onSale = onSale;
 			productObject.currency = currency;
 
