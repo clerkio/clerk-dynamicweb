@@ -76,7 +76,7 @@
 	List<Root> feedObject = new List<Root>();
     Root feedRoot = new Root();
 	List<string> _productIds = new List<string>();
-	
+
 
 	foreach (var _product in GetLoop("QueryResultItem")) {
 		_productIds.Add(_product.GetString("ID"));
@@ -90,7 +90,7 @@
 			if (product.DefaultShopId != ClerkConfig.ShopId) {
 				continue;
 			}
-			
+
 			var discounted_price = 0.00;
 
 			foreach (var price in product.Prices) {
@@ -105,12 +105,12 @@
 					}
 				}
 			}
-			
+
 
 			Product productObject = new Product();
 			var onSale = false;
 			var currency = "";
-						
+
 			var stockStatus = Dynamicweb.Ecommerce.Services.Products.GetStockStatus(product, product.LanguageId);
 			productObject.id = product.Id;
 			productObject.number = product.Number;
@@ -136,7 +136,7 @@
 			if (product.Manufacturer != null && product.ManufacturerId != "") {
 				productObject.manufacturer = product.Manufacturer.Name;
 			}
-			
+
 			foreach (var Group in product.Groups) {
 				Category categoryObject = new Category();
 				categoryObject.id = Group.Id;
@@ -144,7 +144,7 @@
 			}
 
 			var Fields = product.ProductFieldValues;
-			
+
 			foreach (var field in Fields) {
 				var value = Dynamicweb.Ecommerce.Services.Products.GetFieldValue(product, field.ProductField).Data;
 
